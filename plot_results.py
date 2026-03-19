@@ -87,6 +87,7 @@ def plot_per_task_breakdown(results: dict, out_path: str):
 def plot_entropy_traces(results_dir: str, out_path: str):
     """Per-step entropy traces for representative tasks (one per suite)."""
     import glob
+    import os
 
     suite_order = ["libero_spatial", "libero_object", "libero_goal", "libero_10"]
     fig, ax = plt.subplots(figsize=(10, 5))
