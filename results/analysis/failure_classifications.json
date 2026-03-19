@@ -1,0 +1,1144 @@
+[
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 2,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 14,
+          "rate_per_100": 6.4
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 3,
+    "n_steps": 220,
+    "labels": [
+      [
+        "STUCK_LOOP",
+        {
+          "n_peaks": 2,
+          "top_peaks": [
+            [
+              6,
+              0.5261197454405305
+            ],
+            [
+              10,
+              0.4578907646988291
+            ]
+          ]
+        }
+      ],
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 149,
+          "steps_after_loss": 70,
+          "n_close_regions": 1
+        }
+      ],
+      [
+        "AIMLESS_WANDERING",
+        {
+          "overall_efficiency": 0.2398,
+          "late_efficiency": 0.1213,
+          "total_distance": 98.1935
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate",
+    "episode_idx": 0,
+    "n_steps": 220,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate",
+    "episode_idx": 1,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 32,
+          "rate_per_100": 14.5
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate",
+    "episode_idx": 2,
+    "n_steps": 220,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate",
+    "episode_idx": 3,
+    "n_steps": 220,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate",
+    "episode_idx": 5,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 41,
+          "rate_per_100": 18.6
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 0,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 17,
+          "rate_per_100": 7.7
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 1,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 68,
+          "steps_after_loss": 151,
+          "n_close_regions": 1
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 2,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 85,
+          "steps_after_loss": 134,
+          "n_close_regions": 1
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 3,
+    "n_steps": 220,
+    "labels": [
+      [
+        "STUCK_LOOP",
+        {
+          "n_peaks": 2,
+          "top_peaks": [
+            [
+              8,
+              0.5570266800810175
+            ],
+            [
+              14,
+              0.43157562279066386
+            ]
+          ]
+        }
+      ],
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 143,
+          "steps_after_loss": 76,
+          "n_close_regions": 4
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 18,
+          "rate_per_100": 8.2
+        }
+      ],
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.205,
+          "late_stall_fraction": 0.818
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 4,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 56,
+          "steps_after_loss": 163,
+          "n_close_regions": 1
+        }
+      ],
+      [
+        "AIMLESS_WANDERING",
+        {
+          "overall_efficiency": 0.1867,
+          "late_efficiency": 0.065,
+          "total_distance": 117.8651
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 5,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 28,
+          "rate_per_100": 12.7
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 6,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 100,
+          "steps_after_loss": 119,
+          "n_close_regions": 4
+        }
+      ],
+      [
+        "AIMLESS_WANDERING",
+        {
+          "overall_efficiency": 0.2097,
+          "late_efficiency": 0.1101,
+          "total_distance": 123.8303
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+    "episode_idx": 8,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 68,
+          "steps_after_loss": 151,
+          "n_close_regions": 2
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate",
+    "episode_idx": 0,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 42,
+          "rate_per_100": 19.1
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate",
+    "episode_idx": 1,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 36,
+          "rate_per_100": 16.4
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate",
+    "episode_idx": 3,
+    "n_steps": 220,
+    "labels": [
+      [
+        "STUCK_LOOP",
+        {
+          "n_peaks": 3,
+          "top_peaks": [
+            [
+              4,
+              0.6672587304541379
+            ],
+            [
+              6,
+              0.6013172151116072
+            ],
+            [
+              10,
+              0.480266671703759
+            ]
+          ]
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 42,
+          "rate_per_100": 19.1
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate",
+    "episode_idx": 7,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 101,
+          "steps_after_loss": 118,
+          "n_close_regions": 1
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 17,
+          "rate_per_100": 7.7
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate",
+    "episode_idx": 9,
+    "n_steps": 220,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.214,
+          "late_stall_fraction": 0.818
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate",
+    "episode_idx": 2,
+    "n_steps": 220,
+    "labels": [
+      [
+        "AIMLESS_WANDERING",
+        {
+          "overall_efficiency": 0.2931,
+          "late_efficiency": 0.091,
+          "total_distance": 113.1387
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 22,
+          "rate_per_100": 10.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate",
+    "episode_idx": 4,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 23,
+          "rate_per_100": 10.5
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate",
+    "episode_idx": 0,
+    "n_steps": 220,
+    "labels": [
+      [
+        "STUCK_LOOP",
+        {
+          "n_peaks": 3,
+          "top_peaks": [
+            [
+              4,
+              0.37304630766741237
+            ],
+            [
+              9,
+              0.3759354890590401
+            ],
+            [
+              13,
+              0.3965317946319647
+            ]
+          ]
+        }
+      ],
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 159,
+          "steps_after_loss": 60,
+          "n_close_regions": 4
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 32,
+          "rate_per_100": 14.5
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate",
+    "episode_idx": 5,
+    "n_steps": 220,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 14,
+          "rate_per_100": 6.4
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_spatial",
+    "task_name": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate",
+    "episode_idx": 8,
+    "n_steps": 220,
+    "labels": [
+      [
+        "STUCK_LOOP",
+        {
+          "n_peaks": 2,
+          "top_peaks": [
+            [
+              16,
+              0.3860327282665978
+            ],
+            [
+              18,
+              0.3838454165768014
+            ]
+          ]
+        }
+      ],
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 130,
+          "steps_after_loss": 89,
+          "n_close_regions": 1
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket",
+    "episode_idx": 1,
+    "n_steps": 280,
+    "labels": [
+      [
+        "STUCK_LOOP",
+        {
+          "n_peaks": 2,
+          "top_peaks": [
+            [
+              5,
+              0.48504781400195757
+            ],
+            [
+              8,
+              0.43690035562411855
+            ]
+          ]
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 38,
+          "rate_per_100": 13.6
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket",
+    "episode_idx": 2,
+    "n_steps": 280,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.471,
+          "late_stall_fraction": 0.971
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket",
+    "episode_idx": 4,
+    "n_steps": 280,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.464,
+          "late_stall_fraction": 0.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket",
+    "episode_idx": 7,
+    "n_steps": 280,
+    "labels": [
+      [
+        "AIMLESS_WANDERING",
+        {
+          "overall_efficiency": 0.1775,
+          "late_efficiency": 0.1158,
+          "total_distance": 137.6548
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 42,
+          "rate_per_100": 15.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_alphabet_soup_and_place_it_in_the_basket",
+    "episode_idx": 9,
+    "n_steps": 280,
+    "labels": [
+      [
+        "STUCK_LOOP",
+        {
+          "n_peaks": 2,
+          "top_peaks": [
+            [
+              8,
+              0.5116733988501255
+            ],
+            [
+              11,
+              0.37923724561197664
+            ]
+          ]
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 47,
+          "rate_per_100": 16.8
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_cream_cheese_and_place_it_in_the_basket",
+    "episode_idx": 0,
+    "n_steps": 280,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 121,
+          "steps_after_loss": 158,
+          "n_close_regions": 2
+        }
+      ],
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.457,
+          "late_stall_fraction": 1.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_cream_cheese_and_place_it_in_the_basket",
+    "episode_idx": 2,
+    "n_steps": 280,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.671,
+          "late_stall_fraction": 1.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_cream_cheese_and_place_it_in_the_basket",
+    "episode_idx": 5,
+    "n_steps": 280,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 46,
+          "rate_per_100": 16.4
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_cream_cheese_and_place_it_in_the_basket",
+    "episode_idx": 8,
+    "n_steps": 280,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 117,
+          "steps_after_loss": 162,
+          "n_close_regions": 2
+        }
+      ],
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.514,
+          "late_stall_fraction": 0.986
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_object",
+    "task_name": "pick_up_the_salad_dressing_and_place_it_in_the_basket",
+    "episode_idx": 9,
+    "n_steps": 280,
+    "labels": [
+      [
+        "AIMLESS_WANDERING",
+        {
+          "overall_efficiency": 0.2775,
+          "late_efficiency": 0.0114,
+          "total_distance": 80.4211
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 39,
+          "rate_per_100": 13.9
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_goal",
+    "task_name": "open_the_middle_drawer_of_the_cabinet",
+    "episode_idx": 3,
+    "n_steps": 300,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_goal",
+    "task_name": "open_the_middle_drawer_of_the_cabinet",
+    "episode_idx": 7,
+    "n_steps": 300,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_goal",
+    "task_name": "open_the_top_drawer_and_put_the_bowl_inside",
+    "episode_idx": 0,
+    "n_steps": 300,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_goal",
+    "task_name": "open_the_top_drawer_and_put_the_bowl_inside",
+    "episode_idx": 1,
+    "n_steps": 300,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_goal",
+    "task_name": "open_the_top_drawer_and_put_the_bowl_inside",
+    "episode_idx": 2,
+    "n_steps": 300,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_goal",
+    "task_name": "open_the_top_drawer_and_put_the_bowl_inside",
+    "episode_idx": 4,
+    "n_steps": 300,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_goal",
+    "task_name": "open_the_top_drawer_and_put_the_bowl_inside",
+    "episode_idx": 6,
+    "n_steps": 300,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_goal",
+    "task_name": "open_the_top_drawer_and_put_the_bowl_inside",
+    "episode_idx": 8,
+    "n_steps": 300,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 46,
+          "rate_per_100": 15.3
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket",
+    "episode_idx": 0,
+    "n_steps": 520,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 73,
+          "rate_per_100": 14.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket",
+    "episode_idx": 5,
+    "n_steps": 520,
+    "labels": [
+      [
+        "UNCLASSIFIED",
+        {}
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket",
+    "episode_idx": 8,
+    "n_steps": 520,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 343,
+          "steps_after_loss": 176,
+          "n_close_regions": 5
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 40,
+          "rate_per_100": 7.7
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+    "episode_idx": 0,
+    "n_steps": 520,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 456,
+          "steps_after_loss": 63,
+          "n_close_regions": 2
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+    "episode_idx": 1,
+    "n_steps": 520,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 324,
+          "steps_after_loss": 195,
+          "n_close_regions": 3
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 92,
+          "rate_per_100": 17.7
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+    "episode_idx": 2,
+    "n_steps": 520,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.608,
+          "late_stall_fraction": 0.015
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+    "episode_idx": 3,
+    "n_steps": 520,
+    "labels": [
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 41,
+          "rate_per_100": 7.9
+        }
+      ],
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.435,
+          "late_stall_fraction": 1.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+    "episode_idx": 4,
+    "n_steps": 520,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 214,
+          "steps_after_loss": 305,
+          "n_close_regions": 1
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+    "episode_idx": 5,
+    "n_steps": 520,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.742,
+          "late_stall_fraction": 1.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+    "episode_idx": 6,
+    "n_steps": 520,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.71,
+          "late_stall_fraction": 1.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+    "episode_idx": 8,
+    "n_steps": 520,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.725,
+          "late_stall_fraction": 1.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate",
+    "episode_idx": 0,
+    "n_steps": 520,
+    "labels": [
+      [
+        "STUCK_LOOP",
+        {
+          "n_peaks": 5,
+          "top_peaks": [
+            [
+              4,
+              0.5755482993809978
+            ],
+            [
+              6,
+              0.6032901352056357
+            ],
+            [
+              8,
+              0.5717692134568898
+            ]
+          ]
+        }
+      ],
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 214,
+          "steps_after_loss": 305,
+          "n_close_regions": 2
+        }
+      ],
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.148,
+          "late_stall_fraction": 0.508
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate",
+    "episode_idx": 1,
+    "n_steps": 520,
+    "labels": [
+      [
+        "AIMLESS_WANDERING",
+        {
+          "overall_efficiency": 0.3378,
+          "late_efficiency": 0.147,
+          "total_distance": 80.122
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 75,
+          "rate_per_100": 14.4
+        }
+      ],
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.373,
+          "late_stall_fraction": 0.015
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate",
+    "episode_idx": 2,
+    "n_steps": 520,
+    "labels": [
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.744,
+          "late_stall_fraction": 1.0
+        }
+      ]
+    ]
+  },
+  {
+    "suite": "libero_10",
+    "task_name": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate",
+    "episode_idx": 6,
+    "n_steps": 520,
+    "labels": [
+      [
+        "GRASP_LOST",
+        {
+          "last_grasp_end": 319,
+          "steps_after_loss": 200,
+          "n_close_regions": 6
+        }
+      ],
+      [
+        "GRIPPER_INDECISION",
+        {
+          "total_switches": 44,
+          "rate_per_100": 8.5
+        }
+      ],
+      [
+        "STALLED",
+        {
+          "stall_fraction": 0.317,
+          "late_stall_fraction": 0.331
+        }
+      ]
+    ]
+  }
+]
