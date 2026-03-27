@@ -1,0 +1,240 @@
+{
+  "libero_spatial": {
+    "horizon": "short (10-20)",
+    "checkpoint": "openvla-7b-finetuned-libero-spatial-gptq-4bit",
+    "n_tasks_run": 10,
+    "total_episodes": 100,
+    "total_successes": 83,
+    "success_rate": 0.83,
+    "mean_steps": 129.3,
+    "mean_wall_time_per_episode": 22.8,
+    "per_task": [
+      {
+        "task": "pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate",
+        "success_rate": 0.7,
+        "mean_steps": 124.2
+      },
+      {
+        "task": "pick_up_the_black_bowl_next_to_the_ramekin_and_place_it_on_the_plate",
+        "success_rate": 1.0,
+        "mean_steps": 112.0
+      },
+      {
+        "task": "pick_up_the_black_bowl_from_table_center_and_place_it_on_the_plate",
+        "success_rate": 0.9,
+        "mean_steps": 131.5
+      },
+      {
+        "task": "pick_up_the_black_bowl_on_the_cookie_box_and_place_it_on_the_plate",
+        "success_rate": 1.0,
+        "mean_steps": 94.4
+      },
+      {
+        "task": "pick_up_the_black_bowl_in_the_top_drawer_of_the_wooden_cabinet_and_place_it_on_the_plate",
+        "success_rate": 0.8,
+        "mean_steps": 149.1
+      },
+      {
+        "task": "pick_up_the_black_bowl_on_the_ramekin_and_place_it_on_the_plate",
+        "success_rate": 0.7,
+        "mean_steps": 128.9
+      },
+      {
+        "task": "pick_up_the_black_bowl_next_to_the_cookie_box_and_place_it_on_the_plate",
+        "success_rate": 1.0,
+        "mean_steps": 107.2
+      },
+      {
+        "task": "pick_up_the_black_bowl_on_the_stove_and_place_it_on_the_plate",
+        "success_rate": 0.7,
+        "mean_steps": 153.3
+      },
+      {
+        "task": "pick_up_the_black_bowl_next_to_the_plate_and_place_it_on_the_plate",
+        "success_rate": 0.7,
+        "mean_steps": 142.2
+      },
+      {
+        "task": "pick_up_the_black_bowl_on_the_wooden_cabinet_and_place_it_on_the_plate",
+        "success_rate": 0.8,
+        "mean_steps": 150.1
+      }
+    ]
+  },
+  "libero_object": {
+    "horizon": "medium (20-50)",
+    "checkpoint": "openvla-7b-finetuned-libero-object-gptq-4bit",
+    "n_tasks_run": 9,
+    "total_episodes": 90,
+    "total_successes": 62,
+    "success_rate": 0.6888888888888889,
+    "mean_steps": 200.8,
+    "mean_wall_time_per_episode": 33.7,
+    "per_task": [
+      {
+        "task": "pick_up_the_alphabet_soup_and_place_it_in_the_basket",
+        "success_rate": 0.9,
+        "mean_steps": 184.5
+      },
+      {
+        "task": "pick_up_the_salad_dressing_and_place_it_in_the_basket",
+        "success_rate": 0.8,
+        "mean_steps": 178.6
+      },
+      {
+        "task": "pick_up_the_bbq_sauce_and_place_it_in_the_basket",
+        "success_rate": 0.5,
+        "mean_steps": 221.4
+      },
+      {
+        "task": "pick_up_the_ketchup_and_place_it_in_the_basket",
+        "success_rate": 1.0,
+        "mean_steps": 158.1
+      },
+      {
+        "task": "pick_up_the_tomato_sauce_and_place_it_in_the_basket",
+        "success_rate": 0.7,
+        "mean_steps": 210.0
+      },
+      {
+        "task": "pick_up_the_butter_and_place_it_in_the_basket",
+        "success_rate": 0.5,
+        "mean_steps": 219.0
+      },
+      {
+        "task": "pick_up_the_milk_and_place_it_in_the_basket",
+        "success_rate": 0.4,
+        "mean_steps": 242.6
+      },
+      {
+        "task": "pick_up_the_chocolate_pudding_and_place_it_in_the_basket",
+        "success_rate": 0.5,
+        "mean_steps": 234.2
+      },
+      {
+        "task": "pick_up_the_orange_juice_and_place_it_in_the_basket",
+        "success_rate": 0.9,
+        "mean_steps": 159.2
+      }
+    ]
+  },
+  "libero_goal": {
+    "horizon": "medium-long (30-80)",
+    "checkpoint": "openvla-7b-finetuned-libero-goal-gptq-4bit",
+    "n_tasks_run": 10,
+    "total_episodes": 100,
+    "total_successes": 75,
+    "success_rate": 0.75,
+    "mean_steps": 164.7,
+    "mean_wall_time_per_episode": 27.8,
+    "per_task": [
+      {
+        "task": "open_the_middle_drawer_of_the_cabinet",
+        "success_rate": 0.6,
+        "mean_steps": 211.9
+      },
+      {
+        "task": "put_the_bowl_on_the_stove",
+        "success_rate": 1.0,
+        "mean_steps": 97.1
+      },
+      {
+        "task": "put_the_wine_bottle_on_top_of_the_cabinet",
+        "success_rate": 0.8,
+        "mean_steps": 138.4
+      },
+      {
+        "task": "open_the_top_drawer_and_put_the_bowl_inside",
+        "success_rate": 0.6,
+        "mean_steps": 238.1
+      },
+      {
+        "task": "put_the_bowl_on_top_of_the_cabinet",
+        "success_rate": 0.9,
+        "mean_steps": 115.8
+      },
+      {
+        "task": "push_the_plate_to_the_front_of_the_stove",
+        "success_rate": 0.6,
+        "mean_steps": 216.5
+      },
+      {
+        "task": "put_the_cream_cheese_in_the_bowl",
+        "success_rate": 0.7,
+        "mean_steps": 171.1
+      },
+      {
+        "task": "turn_on_the_stove",
+        "success_rate": 0.8,
+        "mean_steps": 138.3
+      },
+      {
+        "task": "put_the_bowl_on_the_plate",
+        "success_rate": 0.8,
+        "mean_steps": 120.9
+      },
+      {
+        "task": "put_the_wine_bottle_on_the_rack",
+        "success_rate": 0.7,
+        "mean_steps": 198.9
+      }
+    ]
+  },
+  "libero_10": {
+    "horizon": "long (50-100+)",
+    "checkpoint": "openvla-7b-finetuned-libero-10-gptq-4bit",
+    "n_tasks_run": 9,
+    "total_episodes": 90,
+    "total_successes": 42,
+    "success_rate": 0.4666666666666667,
+    "mean_steps": 408.7,
+    "mean_wall_time_per_episode": 66.5,
+    "per_task": [
+      {
+        "task": "LIVING_ROOM_SCENE2_put_both_the_alphabet_soup_and_the_tomato_sauce_in_the_basket",
+        "success_rate": 0.6,
+        "mean_steps": 404.9
+      },
+      {
+        "task": "KITCHEN_SCENE3_turn_on_the_stove_and_put_the_moka_pot_on_it",
+        "success_rate": 0.7,
+        "mean_steps": 360.6
+      },
+      {
+        "task": "KITCHEN_SCENE4_put_the_black_bowl_in_the_bottom_drawer_of_the_cabinet_and_close_it",
+        "success_rate": 0.2,
+        "mean_steps": 473.2
+      },
+      {
+        "task": "LIVING_ROOM_SCENE5_put_the_white_mug_on_the_left_plate_and_put_the_yellow_and_white_mug_on_the_right_plate",
+        "success_rate": 0.4,
+        "mean_steps": 435.9
+      },
+      {
+        "task": "STUDY_SCENE1_pick_up_the_book_and_place_it_in_the_back_compartment_of_the_caddy",
+        "success_rate": 0.8,
+        "mean_steps": 258.3
+      },
+      {
+        "task": "LIVING_ROOM_SCENE6_put_the_white_mug_on_the_plate_and_put_the_chocolate_pudding_to_the_right_of_the_plate",
+        "success_rate": 0.6,
+        "mean_steps": 345.6
+      },
+      {
+        "task": "LIVING_ROOM_SCENE1_put_both_the_alphabet_soup_and_the_cream_cheese_box_in_the_basket",
+        "success_rate": 0.5,
+        "mean_steps": 416.8
+      },
+      {
+        "task": "KITCHEN_SCENE8_put_both_moka_pots_on_the_stove",
+        "success_rate": 0.2,
+        "mean_steps": 502.2
+      },
+      {
+        "task": "KITCHEN_SCENE6_put_the_yellow_and_white_mug_in_the_microwave_and_close_it",
+        "success_rate": 0.2,
+        "mean_steps": 480.9
+      }
+    ]
+  }
+}
