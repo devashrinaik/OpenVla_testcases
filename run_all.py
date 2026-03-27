@@ -43,7 +43,7 @@ SUITES = {
 }
 
 
-def run_task(suite, task_id, n_episodes, model_id, device, gpu_id, out_dir):
+def run_task(suite, task_id, n_episodes, model_id, device, gpu_id, out_dir, precision="bf16"):
     """Run libero_runner.py for one task, return results dict or None on failure."""
     cmd = [
         PYTHON, "libero_runner.py",
@@ -54,6 +54,7 @@ def run_task(suite, task_id, n_episodes, model_id, device, gpu_id, out_dir):
         "--device", device,
         "--gpu_id", str(gpu_id),
         "--out_dir", out_dir,
+        "--precision", precision,
     ]
     print(f"\n{'='*60}")
     print(f"Running: {suite} task {task_id}")
@@ -78,6 +79,9 @@ def main():
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--gpu_id", type=int, default=0)
     parser.add_argument("--out_dir", type=str, default="results")
+    parser.add_argument("--precision", type=str, default="bf16",
+                        choices=["bf16", "8bit", "4bit"],
+                        help="Model precision: bf16 (default), 8bit, or 4bit quantization")
     parser.add_argument("--task_ids", nargs="+", type=int, default=None,
                         help="Specific task IDs to run (default: all)")
     args = parser.parse_args()
@@ -97,7 +101,7 @@ def main():
         for tid in task_ids:
             res = run_task(
                 suite, tid, args.n_episodes, cfg["model_id"],
-                args.device, args.gpu_id, args.out_dir,
+                args.device, args.gpu_id, args.out_dir, args.precision,
             )
             if res:
                 suite_results.append(res)

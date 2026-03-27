@@ -1,16 +1,18 @@
 """
-Minimal closed-loop runner: frozen OpenVLA in LIBERO.
+GPTQ-quantized OpenVLA runner for LIBERO.
 
-Matches the official OpenVLA eval pipeline:
-  - 180-degree image rotation
-  - JPEG encode-decode + Lanczos3 resize (matches RLDS training preprocessing)
-  - Center crop (for models trained with image augmentation)
-  - Gripper normalization [0,1] -> [-1,+1] + sign inversion
-  - 10-step stabilization wait at episode start
+Loads pre-quantized checkpoints created by quantize_checkpoints.py:
+  - Vision encoder + projector in fp16 (non_llm_weights.pt)
+  - LLM backbone as GPTQ 4-bit (llm_quantized/)
+  - norm_stats for action unnormalization
+
+~3-5x faster inference than bitsandbytes on-the-fly dequantization.
 
 Usage:
-    python libero_runner.py --suite libero_spatial --task_id 0 --n_episodes 5
-    python libero_runner.py --suite libero_10 --task_id 0 --n_episodes 5
+    python libero_runner_gptq.py \
+        --checkpoint checkpoints/openvla-7b-finetuned-libero-spatial-gptq-4bit \
+        --suite libero_spatial --task_id 0 --n_episodes 5 \
+        --device cuda:0 --gpu_id 0
 """
 
 import argparse
@@ -18,24 +20,24 @@ import json
 import os
 import sys
 import time
-from pathlib import Path
 
 import numpy as np
 import torch
 from PIL import Image
 
 # ---------------------------------------------------------------------------
-# OpenVLA loader
+# GPTQ OpenVLA loader
 # ---------------------------------------------------------------------------
 
-def load_openvla(model_id="openvla/openvla-7b", device="cuda:0", precision="bf16"):
-    """Load frozen OpenVLA. Returns (model, processor).
+def load_openvla_gptq(checkpoint_path, device="cuda:0"):
+    """Load OpenVLA with GPTQ-quantized LLM backbone.
 
-    Args:
-        precision: One of "bf16", "8bit", "4bit".
+    Returns (model, processor) where the LLM is 4-bit GPTQ and
+    vision encoder + projector are fp16.
     """
     sys.path.insert(0, "/mnt/ssd1/devashri/TOM_revision/sptom_icml/openvla")
     from transformers import AutoConfig, AutoImageProcessor, AutoModelForVision2Seq, AutoProcessor
+    from auto_gptq import AutoGPTQForCausalLM
     from prismatic.extern.hf.configuration_prismatic import OpenVLAConfig
     from prismatic.extern.hf.modeling_prismatic import OpenVLAForActionPrediction
     from prismatic.extern.hf.processing_prismatic import PrismaticImageProcessor, PrismaticProcessor
@@ -45,72 +47,99 @@ def load_openvla(model_id="openvla/openvla-7b", device="cuda:0", precision="bf16
     AutoProcessor.register(OpenVLAConfig, PrismaticProcessor)
     AutoModelForVision2Seq.register(OpenVLAConfig, OpenVLAForActionPrediction)
 
-    processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
+    # Load metadata
+    with open(os.path.join(checkpoint_path, "quantize_config.json")) as f:
+        quant_meta = json.load(f)
+    original_model_id = quant_meta["original_model_id"]
+    print(f"  Original model: {original_model_id}")
+    print(f"  Quantization: {quant_meta['bits']}-bit GPTQ, group_size={quant_meta['group_size']}")
 
-    load_kwargs = dict(
+    # Step 1: Load processor
+    processor = AutoProcessor.from_pretrained(checkpoint_path, trust_remote_code=True)
+
+    # Step 2: Create full model shell in fp16 (on CPU first to save GPU memory)
+    print(f"  Loading model shell from {original_model_id}...")
+    model = AutoModelForVision2Seq.from_pretrained(
+        original_model_id,
+        torch_dtype=torch.float16,
         trust_remote_code=True,
         low_cpu_mem_usage=True,
-        attn_implementation="sdpa",
     )
 
-    if precision == "8bit":
-        from transformers import BitsAndBytesConfig
-        load_kwargs["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
-        load_kwargs["device_map"] = "auto"
-        print(f"  Loading in 8-bit quantization (~7 GB VRAM)")
-    elif precision == "4bit":
-        from transformers import BitsAndBytesConfig
-        load_kwargs["quantization_config"] = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.float16,
-            bnb_4bit_quant_type="nf4",
-        )
-        load_kwargs["device_map"] = "auto"
-        print(f"  Loading in 4-bit quantization (~3.5 GB VRAM)")
-    else:
-        load_kwargs["torch_dtype"] = torch.bfloat16
-        print(f"  Loading in bf16 (~14 GB VRAM)")
+    # Step 3: Load GPTQ-quantized LLM
+    llm_path = os.path.join(checkpoint_path, "llm_quantized")
+    print(f"  Loading GPTQ LLM from {llm_path}...")
+    gptq_llm = AutoGPTQForCausalLM.from_quantized(
+        llm_path,
+        device=device,
+        use_safetensors=True,
+        trust_remote_code=True,
+    )
 
-    model = AutoModelForVision2Seq.from_pretrained(model_id, **load_kwargs)
+    # Step 4: Replace the LLM backbone with the quantized version
+    # The GPTQ model wraps the actual model inside .model
+    model.language_model = gptq_llm.model
 
-    # bitsandbytes handles device placement; only call .to() for bf16
-    if precision == "bf16":
-        model = model.to(device)
+    # Step 5: Load non-LLM weights (vision encoder + projector) and move to device
+    non_llm_path = os.path.join(checkpoint_path, "non_llm_weights.pt")
+    if os.path.exists(non_llm_path):
+        print(f"  Loading vision encoder + projector (fp16)...")
+        non_llm_state = torch.load(non_llm_path, map_location="cpu")
+        # Load only non-LLM weights into the model
+        missing, unexpected = model.load_state_dict(non_llm_state, strict=False)
+        # Missing keys are expected (they're the LLM weights we replaced)
+        print(f"  Loaded {len(non_llm_state)} non-LLM tensors")
+
+    # Step 6: Load norm_stats for action unnormalization
+    norm_stats_path = os.path.join(checkpoint_path, "norm_stats.json")
+    if os.path.exists(norm_stats_path):
+        with open(norm_stats_path) as f:
+            raw_stats = json.load(f)
+        # Convert lists back to numpy arrays
+        norm_stats = {}
+        for key, val in raw_stats.items():
+            norm_stats[key] = {}
+            for k, v in val.items():
+                if isinstance(v, list):
+                    norm_stats[key][k] = np.array(v)
+                else:
+                    norm_stats[key][k] = v
+        model.norm_stats = norm_stats
+        print(f"  Loaded norm_stats ({len(norm_stats)} keys)")
+
+    # Move non-quantized parts to device
+    # The GPTQ LLM is already on device; move vision + projector
+    for name, param in model.named_parameters():
+        if not name.startswith("language_model."):
+            param.data = param.data.to(device)
+    for name, buf in model.named_buffers():
+        if not name.startswith("language_model."):
+            buf.data = buf.data.to(device)
 
     model.eval()
     return model, processor
 
 
 # ---------------------------------------------------------------------------
-# Image preprocessing (matches official OpenVLA LIBERO eval exactly)
+# Image preprocessing (same as libero_runner.py)
 # ---------------------------------------------------------------------------
 
 def preprocess_libero_image(obs, center_crop=True):
-    """Extract and preprocess image from LIBERO obs dict.
-
-    Steps (matching official eval):
-      1. 180-degree rotation (LIBERO renders upside-down)
-      2. JPEG encode-decode (matches RLDS dataloader used during training)
-      3. Lanczos3 resize to 224x224
-      4. Optional center crop (for models trained with random crop augmentation)
-    """
+    """Extract and preprocess image from LIBERO obs dict."""
     import tensorflow as tf
 
     img = obs["agentview_image"]
     img = img[::-1, ::-1]  # 180-degree rotation
 
-    # JPEG encode-decode + Lanczos3 resize (matches Octo/OpenVLA RLDS preprocessing)
     img = tf.image.encode_jpeg(img)
     img = tf.io.decode_image(img, expand_animations=False, dtype=tf.uint8)
     img = tf.image.resize(img, (224, 224), method="lanczos3", antialias=True)
     img = tf.cast(tf.clip_by_value(tf.round(img), 0, 255), tf.uint8).numpy()
 
     if center_crop:
-        # Center crop to 90% area, then resize back (matches training augmentation)
         img_tf = tf.convert_to_tensor(img)
         img_tf = tf.image.convert_image_dtype(img_tf, tf.float32)
         img_tf = tf.expand_dims(img_tf, axis=0)
-
         crop_scale = 0.9
         new_size = tf.clip_by_value(tf.sqrt(crop_scale), 0, 1)
         offset = (1 - new_size) / 2
@@ -123,52 +152,36 @@ def preprocess_libero_image(obs, center_crop=True):
     return Image.fromarray(img).convert("RGB")
 
 
-def get_action(model, processor, image: Image.Image, instruction: str,
-               unnorm_key: str, device: str = "cuda:0", input_dtype=None):
-    """Single-step VLA inference -> 7D action.
-
-    Uses predict_action() (works with sdpa attention) for correct unnormalization,
-    then applies gripper normalization and sign inversion to match LIBERO convention.
-    """
-    if input_dtype is None:
-        input_dtype = torch.bfloat16
-    # Official OpenVLA prompt format
+def get_action(model, processor, image, instruction, unnorm_key, device="cuda:0"):
+    """Single-step VLA inference -> 7D action."""
     prompt = f"In: What action should the robot take to {instruction.lower()}?\nOut:"
-    inputs = processor(prompt, image).to(device, dtype=input_dtype)
+    inputs = processor(prompt, image).to(device, dtype=torch.float16)
 
     with torch.no_grad():
         action = model.predict_action(**inputs, unnorm_key=unnorm_key, do_sample=False)
 
-    # Gripper normalization: [0,1] -> [-1,+1], binarized
     action[-1] = 2.0 * action[-1] - 1.0
     action[-1] = np.sign(action[-1])
-
-    # Invert gripper sign: OpenVLA training uses 0=close,1=open
-    # but LIBERO env expects -1=open, +1=close
     action[-1] = -action[-1]
 
-    return action, {
-        "mean_entropy": 0.0,  # TODO: add entropy tracking via generate() if needed
-    }
+    return action, {"mean_entropy": 0.0}
 
 
 # ---------------------------------------------------------------------------
 # LIBERO env helpers
 # ---------------------------------------------------------------------------
 
-# Max steps per suite (from official eval, based on longest training demo)
 SUITE_MAX_STEPS = {
     "libero_spatial": 220,
     "libero_object": 280,
     "libero_goal": 300,
     "libero_10": 520,
 }
+NUM_STEPS_WAIT = 10
 
-NUM_STEPS_WAIT = 10  # stabilization wait
 
-
-def make_libero_env(suite_name: str, task_id: int, camera_size: int = 256, gpu_id: int = 0):
-    """Create a LIBERO env. Returns (env, task_name, init_states, language_instruction)."""
+def make_libero_env(suite_name, task_id, camera_size=256, gpu_id=0):
+    """Create a LIBERO env."""
     from libero.libero import benchmark
     from libero.libero.envs import OffScreenRenderEnv
 
@@ -176,8 +189,6 @@ def make_libero_env(suite_name: str, task_id: int, camera_size: int = 256, gpu_i
     task = b.get_task(task_id)
     task_name = b.get_task_names()[task_id]
     init_states = b.get_task_init_states(task_id)
-
-    # Use the task's own language description (official way)
     instruction = task.language
 
     from libero.libero import get_libero_path
@@ -198,8 +209,8 @@ def make_libero_env(suite_name: str, task_id: int, camera_size: int = 256, gpu_i
 # ---------------------------------------------------------------------------
 
 def run_episode(env, init_state, instruction, model, processor, unnorm_key,
-                max_steps=300, center_crop=True, device="cuda:0", input_dtype=None):
-    """Run one closed-loop episode. Returns dict with trajectory data."""
+                max_steps=300, center_crop=True, device="cuda:0"):
+    """Run one closed-loop episode."""
     env.reset()
     obs = env.set_init_state(init_state)
 
@@ -215,14 +226,12 @@ def run_episode(env, init_state, instruction, model, processor, unnorm_key,
     total_steps = max_steps + NUM_STEPS_WAIT
 
     for step in range(total_steps):
-        # Stabilization: do nothing for first few steps (objects settling)
         if step < NUM_STEPS_WAIT:
-            dummy_action = [0, 0, 0, 0, 0, 0, -1]  # gripper open
-            obs, reward, done, info = env.step(dummy_action)
+            obs, reward, done, info = env.step([0, 0, 0, 0, 0, 0, -1])
             continue
 
         img = preprocess_libero_image(obs, center_crop=center_crop)
-        action, signals = get_action(model, processor, img, instruction, unnorm_key, device, input_dtype=input_dtype)
+        action, signals = get_action(model, processor, img, instruction, unnorm_key, device)
 
         obs, reward, done, info = env.step(action.tolist())
 
@@ -243,28 +252,21 @@ def run_episode(env, init_state, instruction, model, processor, unnorm_key,
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Frozen OpenVLA baseline on LIBERO")
-    parser.add_argument("--suite", type=str, default="libero_spatial",
+    parser = argparse.ArgumentParser(description="GPTQ-quantized OpenVLA on LIBERO")
+    parser.add_argument("--checkpoint", type=str, required=True,
+                        help="Path to GPTQ checkpoint directory")
+    parser.add_argument("--suite", type=str, required=True,
                         choices=["libero_spatial", "libero_object", "libero_goal", "libero_10"])
     parser.add_argument("--task_id", type=int, default=0)
     parser.add_argument("--n_episodes", type=int, default=10)
-    parser.add_argument("--max_steps", type=int, default=None,
-                        help="Override max steps (default: suite-specific from official eval)")
+    parser.add_argument("--max_steps", type=int, default=None)
     parser.add_argument("--device", type=str, default="cuda:0")
-    parser.add_argument("--gpu_id", type=int, default=0, help="GPU for rendering")
-    parser.add_argument("--model_id", type=str, default="openvla/openvla-7b",
-                        help="HuggingFace model ID or local path")
-    parser.add_argument("--unnorm_key", type=str, default=None,
-                        help="Action unnormalization key (default: same as suite name)")
-    parser.add_argument("--precision", type=str, default="bf16",
-                        choices=["bf16", "8bit", "4bit"],
-                        help="Model precision: bf16 (default), 8bit, or 4bit quantization")
-    parser.add_argument("--no_center_crop", action="store_true",
-                        help="Disable center cropping")
-    parser.add_argument("--out_dir", type=str, default="results")
+    parser.add_argument("--gpu_id", type=int, default=0)
+    parser.add_argument("--unnorm_key", type=str, default=None)
+    parser.add_argument("--no_center_crop", action="store_true")
+    parser.add_argument("--out_dir", type=str, default="results/gptq_4bit")
     args = parser.parse_args()
 
-    # Defaults
     if args.max_steps is None:
         args.max_steps = SUITE_MAX_STEPS.get(args.suite, 300)
     if args.unnorm_key is None:
@@ -273,40 +275,31 @@ def main():
 
     os.makedirs(args.out_dir, exist_ok=True)
 
-    # Quantized models use fp16 compute; bf16 for full precision
-    input_dtype = torch.float16 if args.precision in ("4bit", "8bit") else torch.bfloat16
+    print(f"Loading GPTQ OpenVLA from {args.checkpoint} on {args.device}...")
+    sys.stdout.flush()
+    model, processor = load_openvla_gptq(args.checkpoint, device=args.device)
 
-    print(f"Loading OpenVLA ({args.model_id}) on {args.device} [{args.precision}]...")
-    model, processor = load_openvla(model_id=args.model_id, device=args.device, precision=args.precision)
-
-    # Check unnorm key exists
+    # Check unnorm key
     if hasattr(model, 'norm_stats') and model.norm_stats is not None:
         if args.unnorm_key not in model.norm_stats:
-            # Try with _no_noops suffix
             alt_key = f"{args.unnorm_key}_no_noops"
             if alt_key in model.norm_stats:
                 args.unnorm_key = alt_key
-                print(f"  Using unnorm_key: {alt_key}")
-            else:
-                print(f"  WARNING: unnorm_key '{args.unnorm_key}' not in model.norm_stats!")
-                print(f"  Available keys: {list(model.norm_stats.keys())}")
 
     print(f"Creating LIBERO env: {args.suite} task {args.task_id}...")
     env, task_name, init_states, instruction = make_libero_env(
         args.suite, args.task_id, gpu_id=args.gpu_id
     )
     print(f"  Task: {task_name}")
-    print(f"  Instruction: {instruction}")
     print(f"  Max steps: {args.max_steps} (+{NUM_STEPS_WAIT} stabilization)")
-    print(f"  Center crop: {center_crop}")
-    print(f"  Init states available: {len(init_states)}")
+    sys.stdout.flush()
 
     results = {
         "suite": args.suite,
         "task_name": task_name,
         "instruction": instruction,
-        "model_id": args.model_id,
-        "precision": args.precision,
+        "checkpoint": args.checkpoint,
+        "precision": "gptq_4bit",
         "unnorm_key": args.unnorm_key,
         "max_steps": args.max_steps,
         "center_crop": center_crop,
@@ -316,13 +309,13 @@ def main():
     for ep in range(args.n_episodes):
         init_idx = ep % len(init_states)
         print(f"\n--- Episode {ep + 1}/{args.n_episodes} (init_state {init_idx}) ---")
+        sys.stdout.flush()
         t0 = time.time()
 
         traj = run_episode(
             env, init_states[init_idx], instruction,
             model, processor, args.unnorm_key,
             max_steps=args.max_steps, center_crop=center_crop, device=args.device,
-            input_dtype=input_dtype,
         )
         elapsed = time.time() - t0
         traj["wall_time_s"] = round(elapsed, 1)
@@ -330,15 +323,15 @@ def main():
         results["episodes"].append(traj)
         status = "SUCCESS" if traj["success"] else "FAIL"
         print(f"  {status} in {traj['n_steps']} steps ({elapsed:.1f}s)")
+        sys.stdout.flush()
 
-    # Summary
     successes = sum(1 for e in results["episodes"] if e["success"])
     results["summary"] = {
         "n_episodes": args.n_episodes,
         "successes": successes,
         "success_rate": successes / args.n_episodes,
-        "mean_steps": np.mean([e["n_steps"] for e in results["episodes"]]),
-        "mean_entropy": np.mean([np.mean(e["entropies"]) for e in results["episodes"] if e["entropies"]]),
+        "mean_steps": float(np.mean([e["n_steps"] for e in results["episodes"]])),
+        "mean_wall_time": float(np.mean([e["wall_time_s"] for e in results["episodes"]])),
     }
     print(f"\n=== Summary: {successes}/{args.n_episodes} success "
           f"({results['summary']['success_rate']:.0%}) ===")

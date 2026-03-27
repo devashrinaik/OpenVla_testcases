@@ -1,16 +1,19 @@
 """
-Minimal closed-loop runner: frozen OpenVLA in LIBERO.
+Quantized OpenVLA runner for LIBERO — separate from libero_runner.py so
+parallel runs on different GPUs don't interfere.
 
-Matches the official OpenVLA eval pipeline:
-  - 180-degree image rotation
-  - JPEG encode-decode + Lanczos3 resize (matches RLDS training preprocessing)
-  - Center crop (for models trained with image augmentation)
-  - Gripper normalization [0,1] -> [-1,+1] + sign inversion
-  - 10-step stabilization wait at episode start
+Supports bf16, 8-bit, and 4-bit precision with explicit GPU targeting.
 
 Usage:
-    python libero_runner.py --suite libero_spatial --task_id 0 --n_episodes 5
-    python libero_runner.py --suite libero_10 --task_id 0 --n_episodes 5
+    # 8-bit on GPU 1
+    python libero_runner_quant.py --suite libero_spatial --task_id 0 --n_episodes 5 \
+        --precision 8bit --device cuda:1 --gpu_id 1 \
+        --model_id openvla/openvla-7b-finetuned-libero-spatial --out_dir results/8bit
+
+    # 4-bit on GPU 1
+    python libero_runner_quant.py --suite libero_spatial --task_id 0 --n_episodes 5 \
+        --precision 4bit --device cuda:1 --gpu_id 1 \
+        --model_id openvla/openvla-7b-finetuned-libero-spatial --out_dir results/4bit
 """
 
 import argparse
@@ -25,14 +28,18 @@ import torch
 from PIL import Image
 
 # ---------------------------------------------------------------------------
-# OpenVLA loader
+# OpenVLA loader (quantization-aware, explicit GPU targeting)
 # ---------------------------------------------------------------------------
 
 def load_openvla(model_id="openvla/openvla-7b", device="cuda:0", precision="bf16"):
-    """Load frozen OpenVLA. Returns (model, processor).
+    """Load frozen OpenVLA with optional quantization.
 
     Args:
+        model_id: HuggingFace model ID or local path.
+        device: Target device, e.g. "cuda:0" or "cuda:1".
         precision: One of "bf16", "8bit", "4bit".
+    Returns:
+        (model, processor)
     """
     sys.path.insert(0, "/mnt/ssd1/devashri/TOM_revision/sptom_icml/openvla")
     from transformers import AutoConfig, AutoImageProcessor, AutoModelForVision2Seq, AutoProcessor
@@ -56,8 +63,11 @@ def load_openvla(model_id="openvla/openvla-7b", device="cuda:0", precision="bf16
     if precision == "8bit":
         from transformers import BitsAndBytesConfig
         load_kwargs["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
+        # Use max_memory to force onto the target GPU
+        gpu_idx = int(device.split(":")[-1]) if ":" in device else 0
         load_kwargs["device_map"] = "auto"
-        print(f"  Loading in 8-bit quantization (~7 GB VRAM)")
+        load_kwargs["max_memory"] = {gpu_idx: "40GiB", "cpu": "30GiB"}
+        print(f"  Loading in 8-bit quantization on {device} (~7 GB VRAM)")
     elif precision == "4bit":
         from transformers import BitsAndBytesConfig
         load_kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -65,11 +75,13 @@ def load_openvla(model_id="openvla/openvla-7b", device="cuda:0", precision="bf16
             bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_quant_type="nf4",
         )
+        gpu_idx = int(device.split(":")[-1]) if ":" in device else 0
         load_kwargs["device_map"] = "auto"
-        print(f"  Loading in 4-bit quantization (~3.5 GB VRAM)")
+        load_kwargs["max_memory"] = {gpu_idx: "40GiB", "cpu": "30GiB"}
+        print(f"  Loading in 4-bit quantization on {device} (~3.5 GB VRAM)")
     else:
         load_kwargs["torch_dtype"] = torch.bfloat16
-        print(f"  Loading in bf16 (~14 GB VRAM)")
+        print(f"  Loading in bf16 on {device} (~14 GB VRAM)")
 
     model = AutoModelForVision2Seq.from_pretrained(model_id, **load_kwargs)
 
@@ -86,27 +98,18 @@ def load_openvla(model_id="openvla/openvla-7b", device="cuda:0", precision="bf16
 # ---------------------------------------------------------------------------
 
 def preprocess_libero_image(obs, center_crop=True):
-    """Extract and preprocess image from LIBERO obs dict.
-
-    Steps (matching official eval):
-      1. 180-degree rotation (LIBERO renders upside-down)
-      2. JPEG encode-decode (matches RLDS dataloader used during training)
-      3. Lanczos3 resize to 224x224
-      4. Optional center crop (for models trained with random crop augmentation)
-    """
+    """Extract and preprocess image from LIBERO obs dict."""
     import tensorflow as tf
 
     img = obs["agentview_image"]
     img = img[::-1, ::-1]  # 180-degree rotation
 
-    # JPEG encode-decode + Lanczos3 resize (matches Octo/OpenVLA RLDS preprocessing)
     img = tf.image.encode_jpeg(img)
     img = tf.io.decode_image(img, expand_animations=False, dtype=tf.uint8)
     img = tf.image.resize(img, (224, 224), method="lanczos3", antialias=True)
     img = tf.cast(tf.clip_by_value(tf.round(img), 0, 255), tf.uint8).numpy()
 
     if center_crop:
-        # Center crop to 90% area, then resize back (matches training augmentation)
         img_tf = tf.convert_to_tensor(img)
         img_tf = tf.image.convert_image_dtype(img_tf, tf.float32)
         img_tf = tf.expand_dims(img_tf, axis=0)
@@ -125,14 +128,9 @@ def preprocess_libero_image(obs, center_crop=True):
 
 def get_action(model, processor, image: Image.Image, instruction: str,
                unnorm_key: str, device: str = "cuda:0", input_dtype=None):
-    """Single-step VLA inference -> 7D action.
-
-    Uses predict_action() (works with sdpa attention) for correct unnormalization,
-    then applies gripper normalization and sign inversion to match LIBERO convention.
-    """
+    """Single-step VLA inference -> 7D action."""
     if input_dtype is None:
         input_dtype = torch.bfloat16
-    # Official OpenVLA prompt format
     prompt = f"In: What action should the robot take to {instruction.lower()}?\nOut:"
     inputs = processor(prompt, image).to(device, dtype=input_dtype)
 
@@ -143,12 +141,11 @@ def get_action(model, processor, image: Image.Image, instruction: str,
     action[-1] = 2.0 * action[-1] - 1.0
     action[-1] = np.sign(action[-1])
 
-    # Invert gripper sign: OpenVLA training uses 0=close,1=open
-    # but LIBERO env expects -1=open, +1=close
+    # Invert gripper sign
     action[-1] = -action[-1]
 
     return action, {
-        "mean_entropy": 0.0,  # TODO: add entropy tracking via generate() if needed
+        "mean_entropy": 0.0,
     }
 
 
@@ -156,7 +153,6 @@ def get_action(model, processor, image: Image.Image, instruction: str,
 # LIBERO env helpers
 # ---------------------------------------------------------------------------
 
-# Max steps per suite (from official eval, based on longest training demo)
 SUITE_MAX_STEPS = {
     "libero_spatial": 220,
     "libero_object": 280,
@@ -164,11 +160,11 @@ SUITE_MAX_STEPS = {
     "libero_10": 520,
 }
 
-NUM_STEPS_WAIT = 10  # stabilization wait
+NUM_STEPS_WAIT = 10
 
 
 def make_libero_env(suite_name: str, task_id: int, camera_size: int = 256, gpu_id: int = 0):
-    """Create a LIBERO env. Returns (env, task_name, init_states, language_instruction)."""
+    """Create a LIBERO env."""
     from libero.libero import benchmark
     from libero.libero.envs import OffScreenRenderEnv
 
@@ -176,8 +172,6 @@ def make_libero_env(suite_name: str, task_id: int, camera_size: int = 256, gpu_i
     task = b.get_task(task_id)
     task_name = b.get_task_names()[task_id]
     init_states = b.get_task_init_states(task_id)
-
-    # Use the task's own language description (official way)
     instruction = task.language
 
     from libero.libero import get_libero_path
@@ -215,9 +209,8 @@ def run_episode(env, init_state, instruction, model, processor, unnorm_key,
     total_steps = max_steps + NUM_STEPS_WAIT
 
     for step in range(total_steps):
-        # Stabilization: do nothing for first few steps (objects settling)
         if step < NUM_STEPS_WAIT:
-            dummy_action = [0, 0, 0, 0, 0, 0, -1]  # gripper open
+            dummy_action = [0, 0, 0, 0, 0, 0, -1]
             obs, reward, done, info = env.step(dummy_action)
             continue
 
@@ -243,24 +236,19 @@ def run_episode(env, init_state, instruction, model, processor, unnorm_key,
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Frozen OpenVLA baseline on LIBERO")
+    parser = argparse.ArgumentParser(description="Quantized OpenVLA on LIBERO")
     parser.add_argument("--suite", type=str, default="libero_spatial",
                         choices=["libero_spatial", "libero_object", "libero_goal", "libero_10"])
     parser.add_argument("--task_id", type=int, default=0)
     parser.add_argument("--n_episodes", type=int, default=10)
-    parser.add_argument("--max_steps", type=int, default=None,
-                        help="Override max steps (default: suite-specific from official eval)")
-    parser.add_argument("--device", type=str, default="cuda:0")
-    parser.add_argument("--gpu_id", type=int, default=0, help="GPU for rendering")
-    parser.add_argument("--model_id", type=str, default="openvla/openvla-7b",
-                        help="HuggingFace model ID or local path")
-    parser.add_argument("--unnorm_key", type=str, default=None,
-                        help="Action unnormalization key (default: same as suite name)")
-    parser.add_argument("--precision", type=str, default="bf16",
-                        choices=["bf16", "8bit", "4bit"],
-                        help="Model precision: bf16 (default), 8bit, or 4bit quantization")
-    parser.add_argument("--no_center_crop", action="store_true",
-                        help="Disable center cropping")
+    parser.add_argument("--max_steps", type=int, default=None)
+    parser.add_argument("--device", type=str, default="cuda:1")
+    parser.add_argument("--gpu_id", type=int, default=1, help="GPU for rendering")
+    parser.add_argument("--model_id", type=str, default="openvla/openvla-7b")
+    parser.add_argument("--unnorm_key", type=str, default=None)
+    parser.add_argument("--precision", type=str, default="8bit",
+                        choices=["bf16", "8bit", "4bit"])
+    parser.add_argument("--no_center_crop", action="store_true")
     parser.add_argument("--out_dir", type=str, default="results")
     args = parser.parse_args()
 
@@ -277,12 +265,12 @@ def main():
     input_dtype = torch.float16 if args.precision in ("4bit", "8bit") else torch.bfloat16
 
     print(f"Loading OpenVLA ({args.model_id}) on {args.device} [{args.precision}]...")
+    print(f"  Output dir: {args.out_dir}")
     model, processor = load_openvla(model_id=args.model_id, device=args.device, precision=args.precision)
 
     # Check unnorm key exists
     if hasattr(model, 'norm_stats') and model.norm_stats is not None:
         if args.unnorm_key not in model.norm_stats:
-            # Try with _no_noops suffix
             alt_key = f"{args.unnorm_key}_no_noops"
             if alt_key in model.norm_stats:
                 args.unnorm_key = alt_key
@@ -300,6 +288,7 @@ def main():
     print(f"  Max steps: {args.max_steps} (+{NUM_STEPS_WAIT} stabilization)")
     print(f"  Center crop: {center_crop}")
     print(f"  Init states available: {len(init_states)}")
+    sys.stdout.flush()
 
     results = {
         "suite": args.suite,
@@ -316,6 +305,7 @@ def main():
     for ep in range(args.n_episodes):
         init_idx = ep % len(init_states)
         print(f"\n--- Episode {ep + 1}/{args.n_episodes} (init_state {init_idx}) ---")
+        sys.stdout.flush()
         t0 = time.time()
 
         traj = run_episode(
@@ -330,6 +320,7 @@ def main():
         results["episodes"].append(traj)
         status = "SUCCESS" if traj["success"] else "FAIL"
         print(f"  {status} in {traj['n_steps']} steps ({elapsed:.1f}s)")
+        sys.stdout.flush()
 
     # Summary
     successes = sum(1 for e in results["episodes"] if e["success"])
